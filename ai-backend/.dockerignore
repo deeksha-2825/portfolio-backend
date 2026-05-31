@@ -1,0 +1,10 @@
+.env
+__pycache__
+*.pyc
+*.pyo
+.venv
+*.egg-info
+patch_*.js
+test_*.py
+reset.py
+*.wav

@@ -1,0 +1,20 @@
+[project]
+name = "ai-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.136.1",
+    "groq>=0.9.0",
+    "faster-whisper>=1.0.2",
+    "websockets>=12.0",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.13.4",
+    "python-dotenv>=1.2.2",
+    "uvicorn>=0.47.0",
+    "pipecat-ai[edgetts,faster-whisper,groq,silero]>=1.3.0",
+    "edge-tts>=7.2.8",
+    "silero-vad>=6.2.1",
+    "soundfile>=0.13.1",
+]
