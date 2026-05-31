@@ -150,7 +150,8 @@ async def websocket_endpoint(websocket: WebSocket):
             message = await websocket.receive()
 
             # Text message = format announcement {"format": "mp4"} or {"format": "webm"}
-            if "text" in message:
+            # Must check value is not None — Starlette always includes both "text" and "bytes" keys
+            if message.get("text") is not None:
                 try:
                     info = json.loads(message["text"])
                     if "format" in info:
@@ -160,7 +161,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     pass
                 continue
 
-            data = message.get("bytes", b"")
+            data = message.get("bytes") or b""
             if not data:
                 continue
             print(f"Received audio bytes: {len(data)}")
