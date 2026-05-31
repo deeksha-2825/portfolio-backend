@@ -94,11 +94,13 @@ def get_ai_response(user_message: str, chat_count: int = 1):
     return response.choices[0].message.content
 
 def _groq_transcribe(audio_path: str) -> str:
+    ext = audio_path.rsplit(".", 1)[-1]
+    mime = "audio/mp4" if ext == "mp4" else "audio/webm"
     with open(audio_path, "rb") as f:
         result = client.audio.transcriptions.create(
-            file=(os.path.basename(audio_path), f, "audio/webm"),
+            file=(os.path.basename(audio_path), f, mime),
             model="whisper-large-v3-turbo",
-            response_format="json",   # always returns object with .text
+            response_format="json",
         )
     return (result.text or "").strip()
 
@@ -141,13 +143,29 @@ async def chat_with_bot(request: ChatRequest, fastapi_req: Request):
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     client_ip = websocket.client.host
+    audio_ext = "webm"  # updated by client format announcement
 
     try:
         while True:
-            data = await websocket.receive_bytes()
+            message = await websocket.receive()
+
+            # Text message = format announcement {"format": "mp4"} or {"format": "webm"}
+            if "text" in message:
+                try:
+                    info = json.loads(message["text"])
+                    if "format" in info:
+                        audio_ext = info["format"]
+                        print(f"Audio format set to: {audio_ext}")
+                except Exception:
+                    pass
+                continue
+
+            data = message.get("bytes", b"")
+            if not data:
+                continue
             print(f"Received audio bytes: {len(data)}")
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=f".{audio_ext}") as temp_audio:
                 temp_audio.write(data)
                 temp_audio_name = temp_audio.name
 
